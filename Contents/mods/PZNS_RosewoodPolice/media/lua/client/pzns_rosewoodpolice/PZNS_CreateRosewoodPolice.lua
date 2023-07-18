@@ -54,7 +54,7 @@ local function checkIsFrameWorkIsInstalled()
     return isFrameWorkIsInstalled;
 end
 
---- Cows: Purely optional, this is simply to remove all the IsoPlayer needs
+-- Cows: with the recent sandbox options update, users can use the sandbox option to clear ALL NPCs needs hourly. Only use this function if you want to override the sandbox option.
 local function clearNPCsNeeds()
     --
     local PZNS_BradTester = "PZNS_BradTester";
@@ -106,7 +106,7 @@ local function npcsSpawnCheck()
         Events.EveryOneMinute.Add(leonCallback);
         Events.EveryOneMinute.Add(marvinCallback);
         Events.EveryOneMinute.Add(checkIsNPCSpawned);
-        Events.EveryHours.Add(clearNPCsNeeds); -- Cows: Optional
+        -- Events.EveryHours.Add(clearNPCsNeeds); -- Cows: Optional
     end
 end
 

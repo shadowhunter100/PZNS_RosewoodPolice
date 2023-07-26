@@ -1,7 +1,9 @@
 local PZNS_DebuggerUtils = require("02_mod_utils/PZNS_DebuggerUtils");
 local PZNS_UtilsNPCs = require("02_mod_utils/PZNS_UtilsNPCs");
+local PZNS_UtilsZones = require("02_mod_utils/PZNS_UtilsZones");
 local PZNS_NPCGroupsManager = require("04_data_management/PZNS_NPCGroupsManager");
 local PZNS_NPCsManager = require("04_data_management/PZNS_NPCsManager");
+local PZNS_NPCZonesManager = require("04_data_management/PZNS_NPCZonesManager");
 require "11_events_spawning/PZNS_Events";            -- Cows: THIS IS REQUIRED, DON'T MESS WITH IT, ALWAYS KEEP THIS AT TOP
 -- Cows: Make sure the NPC spawning functions come AFTER PZNS_InitLoadNPCsData() to prevent duplicate spawns.
 require("pzns_rosewoodpolice/PZNS_RosewoodPoliceBrad");
@@ -21,16 +23,19 @@ local function PZNS_CreateRoseWoodPoliceGroup()
     if (npcGroup == nil) then
         PZNS_NPCGroupsManager.createGroup(groupID);
     end
-    -- WIP - Cows: Needs more testing...
-    -- local zoneBoundaries = {
-    --     math.floor(zoneHighlightX1),
-    --     math.floor(zoneHighlightX2),
-    --     math.floor(zoneHighlightY1),
-    --     math.floor(zoneHighlightY2),
-    --     math.floor(getSpecificPlayer(0):getZ())
-    -- };
-    -- local zoneType = "ZoneHome";
-    -- PZNS_SetGroupZoneBoundary(groupID, zoneType, zoneBoundaries);
+
+    local zoneHome = "ZoneHome";
+    if (PZNS_UtilsZones.PZNS_GetGroupZoneBoundary(groupID, zoneHome) == nil) then
+        PZNS_NPCZonesManager.createZone(groupID, zoneHome);
+        local zoneBoundaries = {
+            math.floor(8063),
+            math.floor(8077),
+            math.floor(11725),
+            math.floor(11735),
+            0
+        };
+        PZNS_UtilsZones.PZNS_SetGroupZoneBoundary(groupID, zoneHome, zoneBoundaries);
+    end
 end
 
 --- Cows: Check if the Framework installed and create a group if true (and if needed)

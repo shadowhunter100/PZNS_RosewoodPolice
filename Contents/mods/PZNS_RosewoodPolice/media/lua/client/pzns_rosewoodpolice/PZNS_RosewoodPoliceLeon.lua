@@ -56,6 +56,7 @@ function PZNS_SpawnPoliceNPCLeon(isSpawned)
                     PZNS_UsePresetPoliceLightOutfit(npcSurvivor);
                 end
                 PZNS_UtilsNPCs.PZNS_AddEquipWeaponNPCSurvivor(npcSurvivor, "Base.Shotgun");
+                PZNS_UtilsNPCs.PZNS_SetLoadedGun(npcSurvivor);
                 -- Cows: Set the job...
                 PZNS_UtilsNPCs.PZNS_SetNPCJob(npcSurvivor, "Guard");
                 -- Cows: Group Assignment

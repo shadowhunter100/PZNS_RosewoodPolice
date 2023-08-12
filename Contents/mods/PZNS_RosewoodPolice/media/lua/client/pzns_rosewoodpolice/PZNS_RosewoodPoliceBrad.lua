@@ -46,6 +46,7 @@ function PZNS_SpawnPoliceNPCBrad(isSpawned)
                 PZNS_UsePresetPolicePerks(npcSurvivor);
                 -- Cows: Setup npcSurvivor outfit...
                 PZNS_UsePresetPoliceLightOutfit(npcSurvivor);
+                PZNS_UtilsNPCs.PZNS_SetLoadedGun(npcSurvivor);
                 -- Cows: Set the job...
                 PZNS_UtilsNPCs.PZNS_SetNPCJob(npcSurvivor, "Guard");
                 -- Cows: Group Assignment

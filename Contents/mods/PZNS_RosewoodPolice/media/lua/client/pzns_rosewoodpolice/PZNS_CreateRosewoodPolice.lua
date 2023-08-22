@@ -1,25 +1,30 @@
 local PZNS_DebuggerUtils = require("02_mod_utils/PZNS_DebuggerUtils");
+local PZNS_PlayerUtils = require("02_mod_utils/PZNS_PlayerUtils");
+local PZNS_UtilsDataGroups = require("02_mod_utils/PZNS_UtilsDataGroups");
+local PZNS_UtilsDataNPCs = require("02_mod_utils/PZNS_UtilsDataNPCs");
+local PZNS_UtilsDataZones = require("02_mod_utils/PZNS_UtilsDataZones");
 local PZNS_UtilsNPCs = require("02_mod_utils/PZNS_UtilsNPCs");
+local PZNS_WorldUtils = require("02_mod_utils/PZNS_WorldUtils");
 local PZNS_UtilsZones = require("02_mod_utils/PZNS_UtilsZones");
 local PZNS_NPCGroupsManager = require("04_data_management/PZNS_NPCGroupsManager");
 local PZNS_NPCsManager = require("04_data_management/PZNS_NPCsManager");
 local PZNS_NPCZonesManager = require("04_data_management/PZNS_NPCZonesManager");
-require "11_events_spawning/PZNS_Events";            -- Cows: THIS IS REQUIRED, DON'T MESS WITH IT, ALWAYS KEEP THIS AT TOP
+require "11_events_spawning/PZNS_Events"; -- Cows: THIS IS REQUIRED, DON'T MESS WITH IT, ALWAYS KEEP THIS AT TOP
+--------------------------------------- End Framework Requirements ---------------------------------------------
 -- Cows: Make sure the NPC spawning functions come AFTER PZNS_InitLoadNPCsData() to prevent duplicate spawns.
-require("pzns_rosewoodpolice/PZNS_RosewoodPoliceBrad");
-require("pzns_rosewoodpolice/PZNS_RosewoodPoliceLeon");
-require("pzns_rosewoodpolice/PZNS_RosewoodPoliceMarvin");
+local PZNS_RosewoodPoliceNPCs = require("pzns_rosewoodpolice/PZNS_RosewoodPoliceNPCs");
 
+-- Cows: Mod Variables.
 local isFrameWorkIsInstalled = false;
-local isBradSpawned = false;
-local isLeonSpawned = false;
-local isMarvinSpawned = false;
-local groupID = "PZNS_RosewoodPolice";
+local frameworkID = "PZNS_Framework";
+local groupID = "PZNS_RosewoodPolice"; -- Cows: CHANGE THIS VALUE AND MAKE SURE IT IS UNIQUE! Otherwise PZNS will not be able to manage this group.
+local isBradSpawned = false;           -- Cows: These flags are set to clean up EveryOneMinute calls when true.
+local isLeonSpawned = false;           -- Cows: These flags are set to clean up EveryOneMinute calls when true.
+local isMarvinSpawned = false;         -- Cows: These flags are set to clean up EveryOneMinute calls when true.
 
---- Cows: Creates the preset group
-local function PZNS_CreateRoseWoodPoliceGroup()
+--- Cows: Creates the preset group with a ZoneHome
+local function createNPCGroup()
     local npcGroup = PZNS_NPCGroupsManager.getGroupByID(groupID);
-    --
     if (npcGroup == nil) then
         PZNS_NPCGroupsManager.createGroup(groupID);
     end
@@ -42,55 +47,34 @@ end
 ---@return boolean
 local function checkIsFrameWorkIsInstalled()
     local activatedMods = getActivatedMods();
-    local frameworkID = "PZNS_Framework";
-    --
     if (activatedMods:contains(frameworkID)) then
         isFrameWorkIsInstalled = true;
-        PZNS_CreateRoseWoodPoliceGroup(); -- Cows: Optional
+        createNPCGroup();
     else
-        -- Cows: Else alert user about not having PZNS_Framework installed...
         local function callback()
             getSpecificPlayer(0):Say("!!! PZNS_RosewoodPolice IS NOT ACTIVE !!!");
             getSpecificPlayer(0):Say("!!! PZNS_Framework IS NOT INSTALLED !!!");
         end
-        Events.EveryOneMinute.Add(callback);
+        Events.EveryOneMinute.Add(callback); -- Cows: Else alert user about not having PZNS_Framework installed...
     end
 
     return isFrameWorkIsInstalled;
 end
 
--- Cows: with the recent sandbox options update, users can use the sandbox option to clear ALL NPCs needs hourly. Only use this function if you want to override the sandbox option.
-local function clearNPCsNeeds()
-    --
-    local PZNS_BradTester = "PZNS_BradTester";
-    local survivorBrad = PZNS_NPCsManager.getActiveNPCBySurvivorID(PZNS_BradTester);
-    PZNS_UtilsNPCs.PZNS_ClearNPCAllNeedsLevel(survivorBrad);
-    --
-    local PZNS_LeonTester = "PZNS_LeonTester";
-    local survivorLeon = PZNS_NPCsManager.getActiveNPCBySurvivorID(PZNS_LeonTester);
-    PZNS_UtilsNPCs.PZNS_ClearNPCAllNeedsLevel(survivorLeon);
-    --
-    local PZNS_MarvinTester = "PZNS_MarvinTester";
-    local survivorMarvin = PZNS_NPCsManager.getActiveNPCBySurvivorID(PZNS_MarvinTester);
-    PZNS_UtilsNPCs.PZNS_ClearNPCAllNeedsLevel(survivorMarvin);
-end
 
---[[
-    Cows: Currently, NPCs cannot spawn off-screen because gridsquare data is not loaded outside of the player's range...
-    Need to figure out how to handle gridsquare data loading.
---]]
 --- Cows: This is an in-game every one minute check (about 2 seconds in real-life time by default)
 --- This is needed because not all NPCs will spawn within range of the player's loaded cell and must therefore be checked regularly to spawn in-game.
 local function npcsSpawnCheck()
     if (isFrameWorkIsInstalled == true) then
+        -- Cows: These callbacks are essential to clean up the EveryOneMinute event calls, otherwise they remain in-game forever.
         local function bradCallback()
-            PZNS_SpawnPoliceNPCBrad(isBradSpawned);
+            isBradSpawned = PZNS_RosewoodPoliceNPCs.spawnPoliceNPCBrad();
         end
         local function leonCallback()
-            PZNS_SpawnPoliceNPCLeon(isLeonSpawned);
+            isLeonSpawned = PZNS_RosewoodPoliceNPCs.spawnPoliceNPCLeon();
         end
         local function marvinCallback()
-            PZNS_SpawnPoliceNPCMarvin(isMarvinSpawned);
+            isMarvinSpawned = PZNS_RosewoodPoliceNPCs.spawnPoliceNPCMarvin();
         end
         --
         local function checkIsNPCSpawned()
